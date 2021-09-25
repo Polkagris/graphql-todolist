@@ -100,6 +100,43 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addUser: {
+      type: UserType,
+      args: {
+        name: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        let user = new User({
+          name: args.name,
+          role: "user",
+        });
+        return user.save();
+      },
+    },
+    addTodo: {
+      type: TodoType,
+      args: {
+        title: { type: GraphQLString },
+        userId: { type: GraphQLID },
+        completed: { type: GraphQLBoolean },
+      },
+      resolve(parent, args) {
+        let todo = new Todo({
+          title: args.title,
+          completed: false,
+          userId: args.userId,
+          createdTime: Date.now(),
+        });
+        return todo.save();
+      },
+    },
+  },
+});
+
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation: Mutation,
 });
