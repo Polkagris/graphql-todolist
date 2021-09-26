@@ -11,34 +11,17 @@ const {
   GraphQLList,
 } = grapghql;
 
-// dummy data
-const todos = [
-  { title: "Walk dog", completed: false, id: "1", userId: "2" },
-  { title: "Make dinnar", completed: false, id: "2", userId: "1" },
-  { title: "Go shopping", completed: false, id: "3", userId: "3" },
-  { title: "Take out trizash", completed: false, id: "4", userId: "1" },
-  { title: "Run", completed: false, id: "5", userId: "2" },
-  { title: "Work, work", completed: false, id: "6", userId: "3" },
-];
-
-const users = [
-  { name: "Arny Tester", role: "user", id: "1" },
-  { name: "Rebecca Thest", role: "user", id: "2" },
-  { name: "Cecil Tizche", role: "user", id: "3" },
-];
-
 const TodoType = new GraphQLObjectType({
   name: "Todo",
   fields: () => ({
     id: { type: GraphQLID },
     title: { type: GraphQLString },
     completed: { type: GraphQLBoolean },
+    userId: { type: GraphQLID },
     user: {
       type: UserType,
       resolve(parent, args) {
-        console.log(`parent`, parent);
-        // find user associated with that todo
-        return users.filter((user) => parent.userId == user.id)[0];
+        return User.findById(parent.userId);
       },
     },
   }),
@@ -54,11 +37,7 @@ const UserType = new GraphQLObjectType({
       type: new GraphQLList(TodoType),
       resolve(parent, args) {
         // find todos associated with that user
-        console.log(
-          `todos`,
-          todos.filter((todo) => parent.id == todo.userId)
-        );
-        return todos.filter((todo) => parent.id == todo.userId);
+        return Todo.find({ userId: parent.id });
       },
     },
   }),
@@ -71,8 +50,7 @@ const RootQuery = new GraphQLObjectType({
       type: TodoType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        // code to get data from db / other source
-        return todos.filter((todo) => todo.id == args.id)[0];
+        return Todo.findById(args.id);
       },
     },
     user: {
@@ -82,19 +60,19 @@ const RootQuery = new GraphQLObjectType({
       },
       resolve(parent, args) {
         // code to get data from db
-        return users.filter((user) => user.id == args.id)[0];
+        return User.findById(args.id);
       },
     },
     todos: {
       type: new GraphQLList(TodoType),
       resolve(parent, args) {
-        return todos;
+        return Todo.find({});
       },
     },
     users: {
       type: new GraphQLList(UserType),
       resolve(parent, args) {
-        return users;
+        return User.find({});
       },
     },
   },
